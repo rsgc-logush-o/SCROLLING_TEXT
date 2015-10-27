@@ -472,8 +472,8 @@ int dataPin = 9;
 int clockPin = 10;
 int latchPin = 8;
 int numberOfDisplays = 2;
-byte y[8];
-byte x[2][8];
+byte yShift[8];
+byte xShift[2][8];
 
 
 void setup() {
@@ -504,8 +504,8 @@ for(int i = 0; i < numberOfDisplays; i++)
 {
  for(int j = 0; j < 8; j++)
  {
-    bitWrite(y[j], i, 1);
-    x[j][i] = 255;
+    bitWrite(yShift[j], i, 1);
+    xShift[j][i] = 255;
  }
 }
  // thread(displayToMatrix);
@@ -564,10 +564,10 @@ void writePixel(int xDraw, int yDraw)
 {
   if(xDraw < 8)
   {
-    bitWrite(x[0][yDraw], xDraw, 0);
+    bitWrite(xShift[0][yDraw], xDraw, 0);
   }else if(xDraw > 7)
   {
-    bitWrite(x[0][yDraw], xDraw-8, 0);
+    bitWrite(xShift[0][yDraw], xDraw-8, 0);
   }
     
 }
@@ -575,10 +575,10 @@ void erasePixel(int xErase, int yErase)
 {
   if(xErase < 8)
   {
-    bitWrite(x[0][yErase], xErase, 0);
+    bitWrite(xShift[0][yErase], xErase, 0);
   }else if(xErase > 7)
   {
-    bitWrite(x[0][yErase], xErase-8, 0);
+    bitWrite(xShift[0][yErase], xErase-8, 0);
   }
 
 }
@@ -593,9 +593,9 @@ ISR(TIMER1_COMPA_vect)
 
       for(int j = 0; j < numberOfDisplays; j++)
       {
-       shiftOut(dataPin, clockPin, LSBFIRST, x[j][i]);
+       shiftOut(dataPin, clockPin, LSBFIRST, xShift[j][i]);
       }
-      shiftOut(dataPin, clockPin, LSBFIRST, y[i]);
+      shiftOut(dataPin, clockPin, LSBFIRST, yShift[i]);
 
     digitalWrite(latchPin, HIGH);
 
@@ -605,26 +605,30 @@ ISR(TIMER1_COMPA_vect)
   }
 }
 
-void scrollText()
+void scrollText(String stringToPrint)
 {
-  for(int i = 0; i < numberOfDisplays; i++)
+
+  byte xBuffer[numberOfDisplays][8];
+  
+
+ for(int i = 0; i < stringToPrint.length() + numberOfDisplays)
+ {
+  for(int l = 8; l > -1; l--)
   {
-    for(int j = 7; j > -1; j--)
+    for(int j = numberOfDisplays - 1; j > -1; j--)
     {
-     
-      for(int l = 0; l < 8; l++)
+      if(i - j < stringToPrint.length() && i - j > -1)
       {
-        if(i > 0)
+        for(int h = 0; h < 8; h++)
         {
-          x[i-1][l] = A[l]<<8-j;
+           xShift[j][h] = ~((charToPrint[stringToPrint.charAt(i-j)-65][7-h]>>l) | (xBuffer[j][h]<<8-l));
+
+           xBuffer[j][h] = ~xShift[j][h];
         }
-        x[i][l] = A[l]>>j;
-        
       }
-      
     }
-   
   }
+ }
 }
 
 
