@@ -116,26 +116,26 @@ int numberOfDisplays = 1;
 
 byte yShift[8];
 byte xShift[1][8];
-
+boolean l = true;
 
 void setup() {
 
-cli(); //TO TURN OFF INTERRUPTS
+//cli(); //TO TURN OFF INTERRUPTS
+//
+//TCCR1A = 0; //SET REGISTER TO 0
+//TCCR1B = 0; // SET REGISTER TO 0
+//TCNT1 = 0; //INITIALIZE COUNTER TO 0 VALUE
+//
+//OCR1A = 259; //SET THE COMPARE MATCH REGISTER TO 259 VALUE
+//
+//TCCR1B |= (1 << WGM12); //TURN ON CTC MODE
+//
+//TCCR1B |= (1 << CS12) | (1 << CS10); // MAKE THE 1024 BIT PRESCALER
+//
+//TIMSK1 |= (1 << OCIE1A); //ENABLE THE COMPARE INTERRUPT
 
-TCCR1A = 0; //SET REGISTER TO 0
-TCCR1B = 0; // SET REGISTER TO 0
-TCNT1 = 0; //INITIALIZE COUNTER TO 0 VALUE
 
-OCR1A = 259; //SET THE COMPARE MATCH REGISTER TO 259 VALUE
-
-TCCR1B |= (1 << WGM12); //TURN ON CTC MODE
-
-TCCR1B |= (1 << CS12) | (1 << CS10); // MAKE THE 1024 BIT PRESCALER
-
-TIMSK1 |= (1 << OCIE1A); //ENABLE THE COMPARE INTERRUPT
-
-
-sei(); //TURN ON INTERRUPTS
+//sei(); //TURN ON INTERRUPTS
 // x = new byte[8];
 // y = new byte[8];
 
@@ -146,13 +146,16 @@ for(int i = 0; i < numberOfDisplays; i++)
 {
  for(int j = 0; j < 8; j++)
  {
-    bitWrite(yShift[j], i, 1);
-    xShift[j][i] = 255;
+   yShift[j] = 255;
+   bitWrite(yShift[j], j, 0);
+  
  }
 }
  // thread(displayToMatrix);
 
- Serial.begin(9600);
+Serial.begin(9600);
+
+
 
 }
 
@@ -177,13 +180,15 @@ void loop() {
 //writePixel(7,0);
 
 
-
+if(l == true)
+{
 scrollText("HELLO");
-
+l = false;
+}
 
   
   
- 
+ //writePixel(1,3);
 
 }
 
@@ -193,25 +198,16 @@ scrollText("HELLO");
 
 void writePixel(int xDraw, int yDraw)
 {
-  if(xDraw < 8)
-  {
-    bitWrite(xShift[0][yDraw], xDraw, 0);
-  }else if(xDraw > 7)
-  {
-    bitWrite(xShift[0][yDraw], xDraw-8, 0);
-  }
+  
+    bitWrite(xShift[0][yDraw], xDraw, 1);
+  
     
 }
 void erasePixel(int xErase, int yErase)
 {
-  if(xErase < 8)
-  {
+ 
     bitWrite(xShift[0][yErase], xErase, 0);
-  }else if(xErase > 7)
-  {
-    bitWrite(xShift[0][yErase], xErase-8, 0);
-  }
-
+ 
 }
 
 
@@ -222,11 +218,12 @@ ISR(TIMER1_COMPA_vect)
   
     digitalWrite(latchPin, LOW);
 
-      for(int j = 0; j < numberOfDisplays; j++)
-      {
-       shiftOut(dataPin, clockPin, LSBFIRST, xShift[j][i]);
-      }
-      shiftOut(dataPin, clockPin, LSBFIRST, yShift[i]);
+
+
+      
+       shiftOut(dataPin, clockPin, LSBFIRST, xShift[0][i]);
+        shiftOut(dataPin, clockPin, LSBFIRST, yShift[i]);
+       
 
     digitalWrite(latchPin, HIGH);
 
@@ -238,22 +235,40 @@ ISR(TIMER1_COMPA_vect)
 
 void scrollText(String stringToPrint)
 {
-  byte stringBitmap[stringToPrint.length()*6];
+  
+  byte stringBitmap[stringToPrint.length() * 6];
   for(int i = 0; i < stringToPrint.length(); i++)
   {
     for(int j = 0; j < 6; j++)
     {
-      if(j == 5) stringBitmap[i*6+j] = 0;
-      stringBitmap[i*6+j] = charToPrint[stringToPrint.charAt(i) - 32][j];
+      if(j == 5)
+      {
+        stringBitmap[i*6+j] = 0;
+      }else
+      {
+       stringBitmap[i*6+j] = charToPrint[stringToPrint.charAt(i) - 32][j];
+      }
     }
   }
-  for(int i = 0; i < stringToPrint.length()*6; i++)
+
+  for(int i = 0; i < stringToPrint.length() * 6; i++)
   {
-    for(int j = 0; j < 6; j++)
-    {
-      
-    }
+    Serial.println(stringBitmap[i]);
+
+    delay(1000);
   }
- 
+//  for(int i = 0; i < stringToPrint.length(); i++)
+//  {
+//   
+//    for(int j = 0; j < 8; j++)
+//    {
+//      for(int l = 0; l < 8; l++)
+//      {
+//      bitWrite(xShift[0][j], l, bitRead(stringBitmap[i*6+l], j));  
+//      }
+//    }
+//   
+//  }
+// delay(200);
 }
 
