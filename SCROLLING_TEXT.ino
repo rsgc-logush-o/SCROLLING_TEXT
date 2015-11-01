@@ -120,22 +120,22 @@ boolean l = true;
 
 void setup() {
 
-//cli(); //TO TURN OFF INTERRUPTS
-//
-//TCCR1A = 0; //SET REGISTER TO 0
-//TCCR1B = 0; // SET REGISTER TO 0
-//TCNT1 = 0; //INITIALIZE COUNTER TO 0 VALUE
-//
-//OCR1A = 259; //SET THE COMPARE MATCH REGISTER TO 259 VALUE
-//
-//TCCR1B |= (1 << WGM12); //TURN ON CTC MODE
-//
-//TCCR1B |= (1 << CS12) | (1 << CS10); // MAKE THE 1024 BIT PRESCALER
-//
-//TIMSK1 |= (1 << OCIE1A); //ENABLE THE COMPARE INTERRUPT
+cli(); //TO TURN OFF INTERRUPTS
+
+TCCR1A = 0; //SET REGISTER TO 0
+TCCR1B = 0; // SET REGISTER TO 0
+TCNT1 = 0; //INITIALIZE COUNTER TO 0 VALUE
+
+OCR1A = 259; //SET THE COMPARE MATCH REGISTER TO 259 VALUE
+
+TCCR1B |= (1 << WGM12); //TURN ON CTC MODE
+
+TCCR1B |= (1 << CS12) | (1 << CS10); // MAKE THE 1024 BIT PRESCALER
+
+TIMSK1 |= (1 << OCIE1A); //ENABLE THE COMPARE INTERRUPT
 
 
-//sei(); //TURN ON INTERRUPTS
+sei(); //TURN ON INTERRUPTS
 // x = new byte[8];
 // y = new byte[8];
 
@@ -153,7 +153,7 @@ for(int i = 0; i < numberOfDisplays; i++)
 }
  // thread(displayToMatrix);
 
-Serial.begin(9600);
+//Serial.begin(9600);
 
 
 
@@ -182,7 +182,7 @@ void loop() {
 
 if(l == true)
 {
-scrollText("HELLO");
+scrollText("&");
 l = false;
 }
 
@@ -251,24 +251,21 @@ void scrollText(String stringToPrint)
     }
   }
 
-  for(int i = 0; i < stringToPrint.length() * 6; i++)
+ 
+  for(int i = 0; i < stringToPrint.length(); i++)
   {
-    Serial.println(stringBitmap[i]);
+   
+    for(int j = 0; j < 8; j++)
+    {
+      for(int l = 0; l < 8; l++)
+      {
+      bitWrite(xShift[0][j], l, bitRead(stringBitmap[i*6+l], 7-j));  
+      }
 
-    delay(1000);
+     // Serial.println(xShift[0][j]);
+    }
+   
   }
-//  for(int i = 0; i < stringToPrint.length(); i++)
-//  {
-//   
-//    for(int j = 0; j < 8; j++)
-//    {
-//      for(int l = 0; l < 8; l++)
-//      {
-//      bitWrite(xShift[0][j], l, bitRead(stringBitmap[i*6+l], j));  
-//      }
-//    }
-//   
-//  }
-// delay(200);
+ delay(10000);
 }
 
