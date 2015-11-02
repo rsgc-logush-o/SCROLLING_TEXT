@@ -112,13 +112,15 @@ byte charToPrint[95][5]
 int dataPin = 9;
 int clockPin = 10;
 int latchPin = 8;
-int numberOfDisplays = 1;
+int numberOfDisplays = 2;
 
 byte yShift[8];
-byte xShift[1][8];
-boolean l = true;
+byte xShift[2][8];
 
-void setup() {
+
+
+
+void setup() { 
 
   cli(); //TO TURN OFF INTERRUPTS
 
@@ -136,75 +138,29 @@ void setup() {
 
 
   sei(); //TURN ON INTERRUPTS
-  // x = new byte[8];
-  // y = new byte[8];
-
+  
   pinMode(dataPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(latchPin, OUTPUT);
-  for (int i = 0; i < numberOfDisplays; i++)
-  {
+ 
     for (int j = 0; j < 8; j++)
     {
       yShift[j] = 255;
       bitWrite(yShift[j], j, 0);
 
     }
-  }
-  // thread(displayToMatrix);
-
-  //Serial.begin(9600);
-
-
-
 }
 
-void loop() {
-
-
-  //writePixel(7,7);
-  //writePixel(6,6);
-  //writePixel(5,5);
-  //writePixel(4,4);
-  //writePixel(3,3);
-  //writePixel(2,2);
-  //writePixel(1,1);
-  //writePixel(0,0);
-  //writePixel(0,7);
-  //writePixel(1,6);
-  //writePixel(2,5);
-  //writePixel(3,4);
-  //writePixel(4,3);
-  //writePixel(5,2);
-  //writePixel(6,1);
-  //writePixel(7,0);
-
-
- scrollText("HELLO WORLD!", 100);
-
-//writePixel(0,0);
-
-  //writePixel(1,3);
-
-}
-
-
-
-
-
-void writePixel(int xDraw, int yDraw)
+void loop() 
 {
-
-  bitWrite(xShift[0][yDraw], xDraw, 1);
-
-
+scrollText("HELLO WORLD ", 50);
 }
-void erasePixel(int xErase, int yErase)
-{
 
-  bitWrite(xShift[0][yErase], xErase, 0);
 
-}
+
+
+
+
 
 
 ISR(TIMER1_COMPA_vect)
@@ -216,14 +172,16 @@ ISR(TIMER1_COMPA_vect)
 
 
 
-
-    shiftOut(dataPin, clockPin, LSBFIRST, xShift[0][i]);
-    shiftOut(dataPin, clockPin, LSBFIRST, yShift[i]);
+    for(int j = numberOfDisplays-1; j > -1; j--)
+    {
+    shiftOut(dataPin, clockPin, MSBFIRST, xShift[j][i]);
+    }
+    shiftOut(dataPin, clockPin, MSBFIRST, yShift[i]);
 
 
     digitalWrite(latchPin, HIGH);
 
-    //  delay(500);
+    
 
 
   }
@@ -248,31 +206,42 @@ void scrollText(String stringToPrint, int scrollSpeed)
   }
 
 
-  for (int i = 0; i < stringToPrint.length(); i++)
+  for (int i = 0; i < stringToPrint.length(); i++)//this is to select each character in the string from the bitmap
   {
-    for(int l = 0; l < 6; l++)
+    for(int l = 0; l < 6; l++)//this is to get the column of each character
     {
-    for (int k = 0; k < 8; k++)
-    {
-      if (k == 7)
+      for(int h = numberOfDisplays-1; h > -1; h--)
       {
-        
+        for (int k = 7; k > -1; k--)//this is to write the column of each character k is what column
+        {
+          if (k == 0 && h == 0)
+          {
+            for (int j = 0; j < 8; j++)
+            {        
+              bitWrite(xShift[h][j], k, bitRead(stringBitmap[i*6+l], j));         
+            }
+          }else if(k == 0 && h != 0)
+          {
             for (int j = 0; j < 8; j++)
             {
+              bitWrite(xShift[h][j], k, bitRead(xShift[h-1][j], 7));
+            } 
+           }else
+           {
+              for (int j = 0; j < 8; j++)
+              {
+                bitWrite(xShift[h][j], k, bitRead(xShift[h][j], k-1));
+              }
               
-                bitWrite(xShift[0][j], k, bitRead(stringBitmap[i*6+l], 7-j));
-              
-            }
-      } else{
-         for (int j = 0; j < 8; j++)
-            {
-              bitWrite(xShift[0][j], k, bitRead(xShift[0][j], k+1));
-            }
-      }
+           }
+           
+        }
       }
       delay(scrollSpeed);
     }
+      
+  }
     
-   }
-  
 }
+  
+
