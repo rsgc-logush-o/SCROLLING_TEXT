@@ -174,9 +174,9 @@ ISR(TIMER1_COMPA_vect)
 
     for(int j = numberOfDisplays-1; j > -1; j--)
     {
-    shiftOut(dataPin, clockPin, MSBFIRST, xShift[j][i]);
+    shiftOut(dataPin, clockPin, MSBFIRST, ~(xShift[j][i]));
     }
-    shiftOut(dataPin, clockPin, MSBFIRST, yShift[i]);
+    shiftOut(dataPin, clockPin, MSBFIRST, ~(yShift[i]));
 
 
     digitalWrite(latchPin, HIGH);
