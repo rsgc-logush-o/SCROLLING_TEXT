@@ -153,7 +153,7 @@ void setup() {
 
 void loop() 
 {
-scrollText("HELLO WORLD ", 50);
+scrollText("HELLO WORLD!  ", 50);
 }
 
 
@@ -190,20 +190,20 @@ ISR(TIMER1_COMPA_vect)
 void scrollText(String stringToPrint, int scrollSpeed)
 {
 
-  byte stringBitmap[stringToPrint.length() * 6];
-  for (int i = 0; i < stringToPrint.length(); i++)
-  {
-    for (int j = 0; j < 6; j++)
-    {
-      if (j == 5)
-      {
-        stringBitmap[i * 6 + j] = 0;
-      } else
-      {
-        stringBitmap[i * 6 + j] = charToPrint[stringToPrint.charAt(i) - 32][j];
-      }
-    }
-  }
+//  byte stringBitmap[stringToPrint.length() * 6];
+//  for (int i = 0; i < stringToPrint.length(); i++)
+//  {
+//    for (int j = 0; j < 6; j++)
+//    {
+//      if (j == 5)
+//      {
+//        stringBitmap[i * 6 + j] = 0;
+//      } else
+//      {
+//        stringBitmap[i * 6 + j] = charToPrint[stringToPrint.charAt(i) - 32][j];
+//      }
+//    }
+//  }
 
 
   for (int i = 0; i < stringToPrint.length(); i++)//this is to select each character in the string from the bitmap
@@ -218,7 +218,7 @@ void scrollText(String stringToPrint, int scrollSpeed)
           {
             for (int j = 0; j < 8; j++)
             {        
-              bitWrite(xShift[h][j], k, bitRead(stringBitmap[i*6+l], j));         
+              bitWrite(xShift[h][j], k, bitRead(charToPrint[stringToPrint.charAt(i) - 32][l], j));         
             }
           }else if(k == 0 && h != 0)
           {
